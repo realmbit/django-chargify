@@ -223,6 +223,7 @@ class ChargifyBase(object):
             val = response.read()
         except:
             pass
+        
         # Unauthorized Error
         if response.status == 401:
             raise ChargifyUnAuthorized(val)
@@ -287,7 +288,7 @@ class ChargifyBase(object):
             log.log(5, "Server Response: %s" %(val))
         except:
             pass
-        
+
         # Unauthorized Error
         if response.status == 401:
             raise ChargifyUnAuthorized(val)
@@ -390,6 +391,9 @@ class ChargifyCustomer(ChargifyBase):
     
     def save(self):
         return self._save('customers', 'customer')
+
+    def delete(self):
+        raise NotImplementedError #Chargify won't let you do this from the API
     
 
 class ChargifyProduct(ChargifyBase):
@@ -426,6 +430,9 @@ class ChargifyProduct(ChargifyBase):
     
     def save(self):
         return self._save('products', 'product')
+
+    def delete(self):
+        raise NotImplementedError #don't want to delete products as they are one-way down
     
     def getPaymentPageUrl(self):
         return 'https://' + self.request_host + '/h/' + self.id + '/subscriptions/new'
@@ -479,6 +486,9 @@ class ChargifySubscription(ChargifyBase):
 
     def save(self):
         return self._save('subscriptions', 'subscription')
+
+    def delete(self, message="Deleted via the API"):
+        return self.unsubscribe(message)
     
     def resetBalance(self):
         self._put("/subscriptions/"+self.id+"/reset_balance.xml", "")
@@ -547,10 +557,13 @@ class ChargifyCreditCard(ChargifyBase):
       <last_name>%s</last_name>
       <zip>%s</zip>
     </credit_card_attributes>
-  </subscription>""" % (self.full_number, self.expiration_month, self.expiration_year, self.cvv, self.first_name, self.last_name, self.zip)
+  </subscription>""" % (self.full_number, self.expiration_month, self.expiration_year, self.cvv, self.first_name, self.last_name, self.billing_zip)
         # end improper indentation
         
         return self._applyS(self._put(path, data), self.__name__, "subscription")
+
+    def delete(self, subscription, message='Deleted via the API'):
+        return subscription.unsubscribe(message)
 
 
 class ChargifyPostBack(ChargifyBase):

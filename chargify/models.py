@@ -185,6 +185,11 @@ class Customer(models.Model, ChargifyBaseModel):
                 log.debug(customer)
         self.user.save()
         return super(Customer, self).save(**kwargs)
+
+    def delete(self, save_api = False, *args, **kwargs):
+        if save_api:
+            self.api.delete()
+        super(Customer, self).delete(*args, **kwargs)
     
     def load(self, api, commit=True):
         if self.id or self.chargify_id:# api.modified_at > self.chargify_updated_at:
@@ -287,7 +292,7 @@ class Product(models.Model, ChargifyBaseModel):
                 saved, product = self.api.save()
                 if saved:
                     return self.load(product, commit=True) # object save happens after load
-            except:
+            except Exception as e:
                 pass
 #        self.api.save()
         return super(Product, self).save(**kwargs)
@@ -389,8 +394,13 @@ class CreditCard(models.Model, ChargifyBaseModel):
     
     def save(self,  save_api = False, *args, **kwargs):
         if save_api:
-            self.api.save()
+            self.api.save(self.subscription)
         return super(CreditCard, self).save(*args, **kwargs)
+
+    def delete(self, save_api = False, *args, **kwargs):
+        if save_api:
+            self.api.delete(self.subscription)
+        return super(CreditCard, self).delete(*args, **kwargs)
     
     def load(self, api, commit=True):
         if api is None:
@@ -509,8 +519,6 @@ class Subscription(models.Model, ChargifyBaseModel):
     product_handle = property(_product_handle)
     
     def save(self, save_api = False, *args, **kwargs):
-        if self.chargify_id is None:
-            save_api = True
         if save_api:
             if self.customer.chargify_id is None:
                 log.debug('Saving Customer')
@@ -521,6 +529,7 @@ class Subscription(models.Model, ChargifyBaseModel):
                 self.customer = customer
             if self.product and self.product.chargify_id is None:
                 log.debug('Saving Product')
+                #this won't actually work
                 product = self.product.save(save_api = True)
                 log.debug("Returned Product : %s" %(product))
                 self.product = product
@@ -530,6 +539,14 @@ class Subscription(models.Model, ChargifyBaseModel):
             if saved:
                 return self.load(subscription, commit=True) # object save happens after load
         return super(Subscription, self).save(*args, **kwargs)
+
+    def delete(self, save_api = False, commit = True, message = None, *args, **kwargs):
+        if save_api:
+            self.api.delete(message=message)
+        if commit:
+            super(Subscription, self).delete(*args, **kwargs)
+        else:
+            self.update()
     
     def load(self, api, commit=True):
         self.chargify_id = int(api.id)
