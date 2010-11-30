@@ -186,10 +186,13 @@ class Customer(models.Model, ChargifyBaseModel):
         self.user.save()
         return super(Customer, self).save(**kwargs)
 
-    def delete(self, save_api = False, *args, **kwargs):
+    def delete(self, save_api = False, commit = True, *args, **kwargs):
         if save_api:
             self.api.delete()
-        super(Customer, self).delete(*args, **kwargs)
+        if commit:
+            super(Customer, self).delete(*args, **kwargs)
+        else:
+            self.update()
     
     def load(self, api, commit=True):
         if self.id or self.chargify_id:# api.modified_at > self.chargify_updated_at:
