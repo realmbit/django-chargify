@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.datetime_safe import new_datetime
+import datetime
 from pychargify.api import ChargifyNotFound
 import logging
 import time
@@ -11,8 +12,10 @@ from django.conf import settings
 log = logging.getLogger("chargify")
 #logging.basicConfig(level=logging.DEBUG)
 
+
 def unique_reference(prefix = ''):
     return '%s%i' %(prefix, time.time()*1000)
+
 
 class ChargifyBaseModel(object):
     """ You can change the gateway/subdomain used by 
@@ -41,6 +44,7 @@ class ChargifyBaseModel(object):
         self.active = True
         if commit:
             self.save()
+
 
 class ChargifyBaseManager(models.Manager):
     def _gateway(self):
@@ -85,10 +89,12 @@ class ChargifyBaseManager(models.Manager):
             val = self.load_and_update(item.id)
             val.save()
 
+
 class CustomerManager(ChargifyBaseManager):
     def _api(self):
         return self.gateway.Customer()
     api = property(_api)
+
 
 class Customer(models.Model, ChargifyBaseModel):
     """ The following are mapped fields:
@@ -240,6 +246,7 @@ class Customer(models.Model, ChargifyBaseModel):
         return customer
     api = property(_api)
 
+
 class ProductManager(ChargifyBaseManager):
     def _api(self):
         return self.gateway.Product()
@@ -257,6 +264,7 @@ class ProductManager(ChargifyBaseManager):
             except:
                 log.error('Failed to load product: %s' %(product))
                 log.error(traceback.format_exc())
+
 
 class Product(models.Model, ChargifyBaseModel):
     MONTH = 'month'
@@ -332,10 +340,12 @@ class Product(models.Model, ChargifyBaseModel):
         return product
     api = property(_api)
 
+
 class CreditCardManager(ChargifyBaseManager):
     def _api(self):
         return self.gateway.CreditCard()
     api = property(_api)
+
 
 class CreditCard(models.Model, ChargifyBaseModel):
     """ This data should NEVER be saved in the database """
@@ -440,6 +450,7 @@ class CreditCard(models.Model, ChargifyBaseModel):
         return cc
     api = property(_api)
 
+
 class SubscriptionManager(ChargifyBaseManager):
     def _api(self):
         return self.gateway.Subscription()
@@ -465,6 +476,7 @@ class SubscriptionManager(ChargifyBaseManager):
                     sub = self.model()
                     sub.load(subscription)
                 sub.save()
+
 
 class Subscription(models.Model, ChargifyBaseModel):
     TRIALING = 'trialing'
@@ -493,9 +505,12 @@ class Subscription(models.Model, ChargifyBaseModel):
     trial_started_at = models.DateTimeField(null=True, blank=True)
     trial_ended_at = models.DateTimeField(null=True, blank=True)
     activated_at = models.DateTimeField(null=True, blank=True)
+    next_assessment_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
+    last_deactivation_at = models.DateTimeField(null=True, blank=True)
+    last_activation_at = models.DateTimeField(null=True, blank=True)
     customer = models.ForeignKey(Customer, null=True)
     product = models.ForeignKey(Product, null=True)
     credit_card = models.OneToOneField(CreditCard, related_name='subscription', null=True, blank=True)
@@ -543,9 +558,15 @@ class Subscription(models.Model, ChargifyBaseModel):
                 return self.load(subscription, commit=True) # object save happens after load
         return super(Subscription, self).save(*args, **kwargs)
 
+    def reactivate(self):
+        self.last_activation_at = datetime.datetime.now()
+        self.api.reactivate()
+        self.update()
+
     def delete(self, save_api = False, commit = True, message = None, *args, **kwargs):
         if save_api:
             self.api.delete(message=message)
+        self.last_deactivation_at = datetime.datetime.now()
         if commit:
             super(Subscription, self).delete(*args, **kwargs)
         else:
@@ -573,8 +594,14 @@ class Subscription(models.Model, ChargifyBaseModel):
             self.expires_at = new_datetime(api.expires_at)
         else:
             self.expires_at = None
-        self.created_at = new_datetime(api.created_at)
-        self.updated_at = new_datetime(api.updated_at)
+        if api.next_assessment_at:
+            self.next_assessment_at = new_datetime(api.next_assessment_at)
+        else:
+            self.next_assessment_at = None
+        if api.created_at:
+            self.created_at = new_datetime(api.created_at)
+        if api.updated_at:
+            self.updated_at = new_datetime(api.updated_at)
         try:
             c = Customer.objects.get(chargify_id = api.customer.id)
         except:
@@ -611,14 +638,16 @@ class Subscription(models.Model, ChargifyBaseModel):
     def upgrade(self, product):
         """ Upgrade / Downgrade products """
         return self.update(self.api.upgrade(product.handle))
-    
-    def _api(self, node_name = ''):
+
+    def load_api(self, node_name = ''):
         """ Load data into chargify api object """
         subscription = self.gateway.Subscription(node_name)
         if self.chargify_id:
             subscription.id = str(self.chargify_id)
         subscription.product = self.product.api
         subscription.product_handle = self.product_handle
+        subscription.balance_in_cents = self.balance_in_cents
+        subscription.next_assessment_at = new_datetime(self.next_assessment_at)
         if self.customer.chargify_id is None:
             subscription.customer = self.customer._api('customer_attributes')
         else:
@@ -626,4 +655,7 @@ class Subscription(models.Model, ChargifyBaseModel):
         if self.credit_card:
             subscription.credit_card = self.credit_card._api('credit_card_attributes')
         return subscription
+    
+    def _api(self, node_name = ''):
+        return self.load_api(node_name=node_name)
     api = property(_api)

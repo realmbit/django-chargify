@@ -200,7 +200,10 @@ class ChargifyBase(object):
                     element.appendChild(value._toxml(dom))
                 else:
                     node = minidom.Element(property)
-                    node_txt = dom.createTextNode(str(value))
+                    if isinstance(value, datetime.datetime):
+                        node_txt = dom.createTextNode(value.isoformat())
+                    else:
+                        node_txt = dom.createTextNode(str(value))
                     node.appendChild(node_txt)
                     element.appendChild(node)
         return element
@@ -462,6 +465,7 @@ class ChargifySubscription(ChargifyBase):
     balance_in_cents = 0
     current_period_started_at = None
     current_period_ends_at = None
+    next_assessment_at = None
     trial_started_at = None
     trial_ended_at = None
     activated_at = None
@@ -475,6 +479,9 @@ class ChargifySubscription(ChargifyBase):
     
     def __init__(self, apikey, subdomain, nodename = ''):
         super( ChargifySubscription, self ).__init__(apikey, subdomain)
+        # apparently adding these here gets them into __dict__
+        self.balance_in_cents = 0
+        self.next_assessment_at = None
         if nodename:
             self.__xmlnodename__ = nodename
     
