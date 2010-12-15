@@ -466,6 +466,7 @@ class ChargifySubscription(ChargifyBase):
     current_period_started_at = None
     current_period_ends_at = None
     next_assessment_at = None
+    next_billing_at = None
     trial_started_at = None
     trial_ended_at = None
     activated_at = None
@@ -482,6 +483,7 @@ class ChargifySubscription(ChargifyBase):
         # apparently adding these here gets them into __dict__
         self.balance_in_cents = 0
         self.next_assessment_at = None
+        self.next_billing_at = None
         if nodename:
             self.__xmlnodename__ = nodename
     

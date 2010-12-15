@@ -506,6 +506,7 @@ class Subscription(models.Model, ChargifyBaseModel):
     trial_ended_at = models.DateTimeField(null=True, blank=True)
     activated_at = models.DateTimeField(null=True, blank=True)
     next_assessment_at = models.DateTimeField(null=True, blank=True)
+    next_billing_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
@@ -648,6 +649,8 @@ class Subscription(models.Model, ChargifyBaseModel):
         subscription.product_handle = self.product_handle
         subscription.balance_in_cents = self.balance_in_cents
         subscription.next_assessment_at = new_datetime(self.next_assessment_at)
+        if self.next_billing_at: #not passed back from chargify under this node, check for set
+            subscription.next_billing_at = new_datetime(self.next_billing_at)
         if self.customer.chargify_id is None:
             subscription.customer = self.customer._api('customer_attributes')
         else:
