@@ -648,7 +648,8 @@ class Subscription(models.Model, ChargifyBaseModel):
         subscription.product = self.product.api
         subscription.product_handle = self.product_handle
         subscription.balance_in_cents = self.balance_in_cents
-        subscription.next_assessment_at = new_datetime(self.next_assessment_at)
+        if self.next_assessment_at:
+            subscription.next_assessment_at = new_datetime(self.next_assessment_at)
         if self.next_billing_at: #not passed back from chargify under this node, check for set
             subscription.next_billing_at = new_datetime(self.next_billing_at)
         if self.customer.chargify_id is None:
