@@ -1,67 +1,31 @@
 # encoding: utf-8
 import datetime
+import traceback
+
 from south.db import db
 from south.v2 import SchemaMigration
+
 from django.db import models
+from django.conf import settings
+
+from chargify.models import Subscription, Customer
+
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-
-        # Adding model 'Component'
-        db.create_table('chargify_component', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('chargify_id', self.gf('django.db.models.fields.IntegerField')(unique=True, null=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=75)),
-            ('product_family', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['chargify.ProductFamily'], null=True)),
-            ('kind', self.gf('django.db.models.fields.CharField')(default='metered_component', max_length=30)),
-            ('pricing_scheme', self.gf('django.db.models.fields.CharField')(max_length=10, null=True)),
-            ('price_per_unit', self.gf('django.db.models.fields.DecimalField')(default='0.00', max_digits=15, decimal_places=2)),
-            ('unit_name', self.gf('django.db.models.fields.CharField')(max_length=75)),
-            ('updated_at', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('created_at', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-        ))
-        db.send_create_signal('chargify', ['Component'])
-
-        # Adding model 'ProductFamily'
-        db.create_table('chargify_productfamily', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('chargify_id', self.gf('django.db.models.fields.IntegerField')(unique=True, null=True)),
-            ('accounting_code', self.gf('django.db.models.fields.CharField')(max_length=30, null=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=75)),
-            ('description', self.gf('django.db.models.fields.TextField')(default='')),
-            ('handle', self.gf('django.db.models.fields.CharField')(default='', max_length=75)),
-        ))
-        db.send_create_signal('chargify', ['ProductFamily'])
-
-        # Adding model 'SubscriptionComponent'
-        db.create_table('chargify_subscriptioncomponent', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('component', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['chargify.Component'], null=True)),
-            ('subscription', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['chargify.Subscription'], null=True)),
-            ('unit_balance', self.gf('django.db.models.fields.DecimalField')(default='0.00', max_digits=15, decimal_places=2)),
-            ('allocatted_quantity', self.gf('django.db.models.fields.DecimalField')(default='0.00', max_digits=15, decimal_places=2)),
-            ('enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
-        ))
-        db.send_create_signal('chargify', ['SubscriptionComponent'])
-
-        # Adding field 'Product.product_family'
-        db.add_column('chargify_product', 'product_family', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['chargify.ProductFamily'], null=True), keep_default=False)
+        if getattr(settings, "TESTING", None):
+            return
+        try:
+            Customer.objects.reload_all()
+            Subscription.objects.reload_all()
+        except:
+            print 'Failed to import chargify data! Please do so manually'
+            traceback.print_exc()
 
 
     def backwards(self, orm):
-
-        # Deleting model 'Component'
-        db.delete_table('chargify_component')
-
-        # Deleting model 'ProductFamily'
-        db.delete_table('chargify_productfamily')
-
-        # Deleting model 'SubscriptionComponent'
-        db.delete_table('chargify_subscriptioncomponent')
-
-        # Deleting field 'Product.product_family'
-        db.delete_column('chargify_product', 'product_family_id')
+        pass
 
 
     models = {
