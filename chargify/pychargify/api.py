@@ -25,8 +25,12 @@ import time
 import datetime
 import iso8601
 import inspect
+import logging
+
 from itertools import chain
 from xml.dom import minidom
+
+log = logging.getLogger("pychargify")
 
 
 try:
@@ -39,7 +43,7 @@ except Exception, e:
             # For AppEngine users
             import django.utils.simplejson as json
         except Exception, e:
-            print "No Json library found... Exiting."
+            log.error("No Json library found... Exiting.")
             exit()
 
 
@@ -273,7 +277,7 @@ class ChargifyBase(object):
         http.putheader("Content-Type", 'text/xml; charset="UTF-8"')
         http.endheaders()
 
-        print('sending: %s' % data)
+        log.debug('sending: %s' % data)
 
         http.send(data)
 
@@ -298,6 +302,8 @@ class ChargifyBase(object):
 
         # Generic Server Errors
         elif response.status in [405, 500]:
+            log.debug('response status: %s' % response.status)
+            log.debug('response reason: %s' % response.reason)
             raise ChargifyServerError()
 
         return r
@@ -407,6 +413,10 @@ class ChargifyCustomer(ChargifyBase):
     def getSubscriptions(self):
         obj = ChargifySubscription(self.api_key, self.sub_domain)
         return obj.getByCustomerId(self.id)
+
+
+class CustomerAttributes(ChargifyCustomer):
+    __xmlnodename__ = 'customer_attributes'
 
 
 class ChargifyProductFamily(ChargifyBase):
@@ -676,7 +686,7 @@ class ChargifySubscriptionComponent(ChargifyBase, CompoundKeyMixin):
 
         dom = minidom.parseString(self.fix_xml_encoding(
         self._put('/subscriptions/%s/components/%s.xml' % (
-                str(self.subscription_id), str(component_id)), data)
+                str(self.subscription_id), str(self.component_id)), data)
         ))
 
     def getUsages(self):
@@ -766,6 +776,9 @@ class Chargify:
 
     def Customer(self):
         return ChargifyCustomer(self.api_key, self.sub_domain)
+
+    def CustomerAttributes(self):
+        return CustomerAttributes(self.api_key, self.sub_domain)
 
     def Product(self):
         return ChargifyProduct(self.api_key, self.sub_domain)
