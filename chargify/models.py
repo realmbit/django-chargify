@@ -236,9 +236,12 @@ class Customer(models.Model, ChargifyBaseModel):
         api = self.api.getById(self.chargify_id)
         return self.load(api, commit)
 
-    def _api(self):
+    def _api(self, nodename=None):
         """ Load data into chargify api object """
-        customer = self.gateway.Customer()
+        if nodename == 'customer_attributes':
+            customer = self.gateway.CustomerAttributes()
+        else:
+            customer = self.gateway.Customer()
         customer.id = str(self.chargify_id)
         customer.first_name = str(self.first_name)
         customer.last_name = str(self.last_name)
@@ -652,7 +655,7 @@ class CreditCard(models.Model, ChargifyBaseModel):
 
     def _api(self):
         """ Load data into chargify api object """
-        cc = self.gateway.CreditCard(node_name)
+        cc = self.gateway.CreditCard()
         cc.first_name = self.first_name
         cc.last_name = self.last_name
         cc.full_number = self._full_number
@@ -771,6 +774,10 @@ class Subscription(models.Model, ChargifyBaseModel):
         self.balance = self._from_cents(value)
     balance_in_cents = property(_balance_in_cents, _set_balance_in_cents)
 
+    def _customer_reference(self):
+        return self.customer.reference
+    customer_reference = property(_customer_reference)
+
     def _product_handle(self):
         return self.product.handle
     product_handle = property(_product_handle)
@@ -883,7 +890,7 @@ class Subscription(models.Model, ChargifyBaseModel):
         subscription = self.gateway.Subscription()
         if self.chargify_id:
             subscription.id = str(self.chargify_id)
-        subscription.product = self.product.api
+        #subscription.product = self.product.api
         subscription.product_handle = self.product_handle
         subscription.balance_in_cents = self.balance_in_cents
         if self.next_assessment_at:
@@ -891,11 +898,13 @@ class Subscription(models.Model, ChargifyBaseModel):
         if self.next_billing_at: #not passed back from chargify under this node, check for set
             subscription.next_billing_at = new_datetime(self.next_billing_at)
         if self.customer.chargify_id is None:
-            subscription.customer = self.customer._api('customer_attributes')
+            subscription.customer = self.customer._api(nodename='customer_attributes')
         else:
-            subscription.customer = self.customer._api('customer_id')
-        if self.credit_card:
-            subscription.credit_card = self.credit_card._api('credit_card_attributes')
+            #subscription.customer = self.customer.api
+            subscription.customer_reference = self.customer_reference
+        subscription.credit_card = self.credit_card.api
+        #if self.credit_card:
+        #    subscription.credit_card = self.credit_card._api('credit_card_attributes')
         return subscription
 
     def _api(self):

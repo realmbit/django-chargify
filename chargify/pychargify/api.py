@@ -543,6 +543,7 @@ class ChargifySubscription(ChargifyBase):
     created_at = None
     updated_at = None
     customer = None
+    customer_reference = ''
     product = None
     product_handle = ''
     credit_card = None
