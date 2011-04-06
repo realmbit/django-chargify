@@ -206,9 +206,7 @@ class Customer(models.Model, ChargifyBaseModel):
         if self.id or self.chargify_id:# api.modified_at > self.chargify_updated_at:
             customer = self
         else:
-#            log.debug('Not loading api')
             customer = Customer()
-        log.debug('Loading Customer API: %s' %(api))
         customer.chargify_id = int(api.id)
         try:
             if customer.user:
@@ -681,7 +679,9 @@ class SubscriptionManager(ChargifyBaseManager):
         loaded = False
         try:
             val = SubscriptionComponent.objects.get(
-                            chargify_id=component.id)
+                component__id=component.id,
+                subscription__id=subscription.id
+            )
             loaded = False
         except:
             pass
@@ -714,9 +714,9 @@ class SubscriptionManager(ChargifyBaseManager):
                     sub.load(subscription)
                 sub.save()
 
-                for component in subscription.getComponents():
-                    c, loaded = self.get_or_load_component(component)
-                    c.save()
+                #for component in subscription.getComponents():
+                #    c, loaded = self.get_or_load_component(component)
+                #    c.save()
 
 
 class Subscription(models.Model, ChargifyBaseModel):
@@ -804,6 +804,7 @@ class Subscription(models.Model, ChargifyBaseModel):
                 return self.load(subscription, commit=True) # object save happens after load
         return super(Subscription, self).save(*args, **kwargs)
 
+
     def reactivate(self):
         self.last_activation_at = datetime.datetime.now()
         self.api.reactivate()
@@ -868,8 +869,20 @@ class Subscription(models.Model, ChargifyBaseModel):
         else:
             credit_card = CreditCard()
             credit_card.load(api.credit_card)
+
         if commit:
             self.save()
+
+        for subscomp in api.getComponents():
+            try:
+                sc = SubscriptionComponent.objects.get(
+                    component__chargify_id = subscomp.component_id,
+                    subscription__chargify_id = subscomp.subscription_id
+                )
+            except:
+                sc = SubscriptionComponent()
+                sc.load(subscomp)
+                sc.save()
         return self
 
     def update(self, commit=True):
@@ -902,9 +915,11 @@ class Subscription(models.Model, ChargifyBaseModel):
         else:
             #subscription.customer = self.customer.api
             subscription.customer_reference = self.customer_reference
-        subscription.credit_card = self.credit_card.api
-        #if self.credit_card:
-        #    subscription.credit_card = self.credit_card._api('credit_card_attributes')
+        if self.credit_card:
+            subscription.credit_card = self.credit_card.api
+        components = self.subscriptioncomponent_set.all()
+        if len(components) > 0:
+            subscription.components = map(lambda c: c.api, components)
         return subscription
 
     def _api(self):
@@ -923,9 +938,9 @@ class SubscriptionComponent(models.Model, ChargifyBaseModel):
     subscription = models.ForeignKey(Subscription, null=True)
     unit_balance = models.DecimalField(
         decimal_places = 2, max_digits = 15, default=Decimal('0.00'))
-    allocatted_quantity = models.DecimalField(
+    allocated_quantity = models.DecimalField(
         decimal_places = 2, max_digits = 15, default=Decimal('0.00'))
-    enabled = models.BooleanField(default=True)
+    enabled = models.BooleanField(default=False)
     objects = SubscriptionComponentManager()
 
     @property
@@ -959,7 +974,7 @@ class SubscriptionComponent(models.Model, ChargifyBaseModel):
 
     def load(self, api, commit=True):
         self.unit_balance = api.unit_balance
-        self.allocatted_quantity = api.allocatted_quantity
+        self.allocated_quantity = api.allocated_quantity
         self.enabled = api.enabled
 
         try:
@@ -990,17 +1005,19 @@ class SubscriptionComponent(models.Model, ChargifyBaseModel):
             self.subscription.id, self.component.id)
         return self.load(api, commit = True)
 
-    def _api(self, node_name = ''):
+    def _api(self):
         """ Load data into chargify api object """
-        component = self.gateway.Component(node_name)
-        c.id = str(self.chargify_id)
+        component = self.gateway.SubscriptionComponent()
+        component.component_id = self.component.chargify_id
+        if self.subscription:
+            component.subscription_id = self.subscription.chargify_id
         component.name = self.name
-        component.product_family = self.product_family.api
         component.kind = self.kind
-        component.price_per_unit_in_cents = self.price_per_unit_in_cents
+        component.unit_name = self.unit_name
+        component.unit_balance = self.unit_balance
+        component.allocated_quantity = self.allocated_quantity
         component.pricing_scheme = self.pricing_scheme
-        component.upated_at = self.updated_at
-        component.created_at = self.created_at
+        component.enabled = self.enabled
         return component
     api = property(_api)
 

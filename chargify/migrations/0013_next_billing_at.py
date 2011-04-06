@@ -7,13 +7,13 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding field 'Subscription.next_billing_at'
         db.add_column('chargify_subscription', 'next_billing_at', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True), keep_default=False)
 
 
     def backwards(self, orm):
-        
+
         # Deleting field 'Subscription.next_billing_at'
         db.delete_column('chargify_subscription', 'next_billing_at')
 

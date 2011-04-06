@@ -40,7 +40,7 @@ class Migration(SchemaMigration):
             ('component', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['chargify.Component'], null=True)),
             ('subscription', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['chargify.Subscription'], null=True)),
             ('unit_balance', self.gf('django.db.models.fields.DecimalField')(default='0.00', max_digits=15, decimal_places=2)),
-            ('allocatted_quantity', self.gf('django.db.models.fields.DecimalField')(default='0.00', max_digits=15, decimal_places=2)),
+            ('allocated_quantity', self.gf('django.db.models.fields.DecimalField')(default='0.00', max_digits=15, decimal_places=2)),
             ('enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
         db.send_create_signal('chargify', ['SubscriptionComponent'])
@@ -185,7 +185,7 @@ class Migration(SchemaMigration):
         },
         'chargify.subscriptioncomponent': {
             'Meta': {'object_name': 'SubscriptionComponent'},
-            'allocatted_quantity': ('django.db.models.fields.DecimalField', [], {'default': "'0.00'", 'max_digits': '15', 'decimal_places': '2'}),
+            'allocated_quantity': ('django.db.models.fields.DecimalField', [], {'default': "'0.00'", 'max_digits': '15', 'decimal_places': '2'}),
             'component': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['chargify.Component']", 'null': 'True'}),
             'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
