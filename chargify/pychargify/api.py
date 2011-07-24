@@ -322,7 +322,7 @@ class ChargifyBase(object):
             'year': datetime.datetime.today().year
         }
         
-        if self.id is not None:
+        if self.id not in [None, 'None']:
             id = str(self.id)
             obj = self._applyS(self._put('/' + url + '/' + id + '.xml', dom.toxml(encoding="utf-8")), self.__name__, node_name)
             if obj:
