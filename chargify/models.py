@@ -309,7 +309,7 @@ class ProductFamily(models.Model, ChargifyBaseModel):
                     # object save happens after load
                     return self.load(product_family, commit=True)
             except Exception as e:
-                pass
+                log.exception(e)
         #self.api.save()
         return super(ProductFamily, self).save(**kwargs)
 
@@ -968,7 +968,7 @@ class SubscriptionComponent(models.Model, ChargifyBaseModel):
                 if saved:
                     return self.load(sc, commit=True)
             except Exception as e:
-                pass
+                log.exception(e)
         return super(SubscriptionComponent, self).save(**kwargs)
 
     def load(self, api, commit=True):
