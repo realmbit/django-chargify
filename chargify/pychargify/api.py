@@ -267,6 +267,8 @@ class ChargifyBase(object):
         response = http.getresponse()
         r = response.read()
 
+        log.debug('got: %s' % r)
+
         # Unauthorized Error
         if response.status == 401:
             raise ChargifyUnAuthorized()
