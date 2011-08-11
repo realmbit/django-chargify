@@ -212,7 +212,7 @@ class ChargifyBase(object):
                         element.appendChild(value._toxml(dom))
                 else:
                     node = minidom.Element(property)
-                    node_txt = dom.createTextNode(value.encode('ascii', 'xmlcharrefreplace'))
+                    node_txt = dom.createTextNode(str(value).encode('ascii', 'xmlcharrefreplace'))
                     node.appendChild(node_txt)
                     element.appendChild(node)
         return element
