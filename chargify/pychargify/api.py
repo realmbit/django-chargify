@@ -433,6 +433,8 @@ class ChargifyProductFamilyComponent(ChargifyBase):
     __name__ = 'ChargifyProductFamilyComponent'
     __attribute_types__ = {}
     __xmlnodename__ = 'component'
+    class Meta:
+        listing = 'components'
 
     id = None
     name = ''
