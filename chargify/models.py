@@ -433,7 +433,7 @@ class Component(models.Model, ChargifyBaseModel):
     def _api(self):
         """ Load data into chargify api object """
         component = self.gateway.Component()
-        c.id = str(self.chargify_id)
+        component.id = str(self.chargify_id)
         component.name = self.name
         component.product_family = self.product_family.api
         component.kind = self.kind
