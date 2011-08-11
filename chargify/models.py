@@ -179,8 +179,7 @@ class Customer(models.Model, ChargifyBaseModel):
             try:
                 saved, customer = self.api.save()
             except ChargifyNotFound, e:
-                for error in e.errors:
-                    log.exception(error)
+                log.exception(e)
                 api = self.api
                 api.id = None
                 saved, customer = api.save()
