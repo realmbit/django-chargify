@@ -259,6 +259,7 @@ class ChargifyBase(object):
         http.putheader("Content-Type", 'text/xml; charset="UTF-8"')
         http.endheaders()
 
+        log.debug('url: %s' % url)
         log.debug('sending: %s' % data)
 
         if data:
