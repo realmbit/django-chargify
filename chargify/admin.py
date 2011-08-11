@@ -16,7 +16,7 @@ def update(modeladmin, request, queryset):
 update.short_description = "Update selected"
 
 def reload_all(modeladmin, request, queryset, model):
-    """ TODO: Remove all of these and add a custom template witha button 
+    """ TODO: Remove all of these and add a custom template witha button
     that will do this at the top, next to the add button"""
     model.objects.reload_all()
     messages.success(request, 'All chargify objects reloaded')
@@ -26,27 +26,47 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ['last_name', 'first_name', 'email', 'reference', 'active']
     ordering = ['_last_name', '_first_name']
     actions = [update, 'reload_all_customers']
-    
+
     def reload_all_customers(self, request, queryset = None):
         return reload_all(self, request, queryset, Customer)
-    
+
 admin.site.register(Customer, CustomerAdmin)
 
+class ComponentInFamily(admin.StackedInline):
+    model = Component
+    extra = 1
+
+class ProductFamilyAdmin(admin.ModelAdmin):
+    inlines = [ComponentInFamily, ]
+    list_display = ['name', 'chargify_id', 'handle', 'accounting_code', 'description']
+    ordering = ['name']
+    actions = [update, 'reload_all_product_families']
+
+    def reload_all_product_families(self, request, queryset):
+        return reload_all(self, request, queryset, ProductFamily)
+
+admin.site.register(ProductFamily, ProductFamilyAdmin)
+
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'price', 'chargify_id', 'handle', 'accounting_code', 'active']
+    list_display = ['name', 'price', 'chargify_id', 'handle', 'accounting_code', 'product_family', 'active']
     ordering = ['name']
     actions = [update, 'reload_all_products']
-    
+
     def reload_all_products(self, request, queryset):
         return reload_all(self, request, queryset, Product)
 
 admin.site.register(Product, ProductAdmin)
 
+class ComponentInSubscription(admin.StackedInline):
+    model = SubscriptionComponent
+    extra = 1
+
 class SubscriptionAdmin(admin.ModelAdmin):
+    inlines = [ComponentInSubscription, ]
     list_display = ['customer', 'product', 'chargify_id', 'balance', 'current_period_started_at', 'trial_started_at', 'active']
     ordering = ['customer']
     actions = [update, 'reload_all_subscriptions']
-    
+
     def reload_all_subscriptions(self, request, queryset = None):
         Subscription.objects.reload_all()
 

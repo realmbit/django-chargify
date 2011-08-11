@@ -50,13 +50,17 @@ Now you'll have access to classes the interact with the Chargify API, such as:
 
 Chargify
 ChargifyProduct
+ChargifyProductFamily
+ChargifyProductFamilyComponent
 ChargifyCustomer
 ChargifiySubscription
 ChargifiyCreditCard
+ChargifySubscriptionComponent
+ChargifyComponentUsage
+ChargifyPostBack
 
 Chargify is a helper class that makes initialization easier of the ChargifyProduct, ChargifyCustomer, ChargifiySubscription and ChargifiyCreditCard classes
 
 Contributors
   Paul Trippett (pyhub)  - Base Development
   mrtron - Several Updates and bug fixes to pychargify library
-
