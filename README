@@ -29,9 +29,9 @@ To use webhook, you need to:
    or a subclass of it.
 2. point chargify to the webhook URL
 
-Hint: when doing localhost development, you can use localhost to debug webhooks
-
 There are a few extension points to insert your own business logic.
+
+Hint: when doing webhook development on localhost, you should use localtunnel.com to debug webhooks
 
 
 Contributors:
