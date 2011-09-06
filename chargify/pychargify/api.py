@@ -106,6 +106,7 @@ class ChargifyBase(object):
 
     class Meta:
         listing = None
+        paged = False
 
     __ignore__ = ['api_key', 'sub_domain', 'base_host', 'request_host',
         'id', '__xmlnodename__', 'Meta']
@@ -334,13 +335,16 @@ class ChargifyBase(object):
     def getAll(self):
         if self.Meta.listing:
             rv = []
+            do_paging = getattr(self.Meta, "paged", False)
             page = 1
             while True:
-                vals = self._applyA(self._get('/%s.xml?page=%s' % (self.Meta.listing, page)),
-                    self.__name__, self.__xmlnodename__)
-                if not vals: break
+                url = '/%s.xml' % self.Meta.listing
+                if do_paging:
+                    url += '?page=%s' % page
+                    page += 1
+                vals = self._applyA(self._get(url), self.__name__, self.__xmlnodename__)
                 rv.extend(vals)
-                page += 1
+                if not do_paging or not vals: break
             return rv
         raise NotImplementedError('Subclass is missing Meta class attribute listing')
 
@@ -516,6 +520,7 @@ class ChargifySubscription(ChargifyBase):
 
     class Meta:
         listing = 'subscriptions'
+        paged = True
 
     __name__ = 'ChargifySubscription'
     __attribute_types__ = {
