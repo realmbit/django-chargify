@@ -833,8 +833,14 @@ class Subscription(models.Model, ChargifyBaseModel):
         self.chargify_id = int(api.id)
         self.state = api.state
         self.balance_in_cents = api.balance_in_cents
-        self.current_period_started_at = new_datetime(api.current_period_started_at)
-        self.current_period_ends_at = new_datetime(api.current_period_ends_at)
+        if api.current_period_started_at:
+            self.current_period_started_at = new_datetime(api.current_period_started_at)
+        else:
+            self.current_period_started_at = None
+        if api.current_period_ends_at:
+            self.current_period_ends_at = new_datetime(api.current_period_ends_at)
+        else:
+            self.current_period_ends_at = None
         if api.trial_started_at:
             self.trial_started_at = new_datetime(api.trial_started_at)
         else:
