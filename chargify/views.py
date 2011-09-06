@@ -50,7 +50,7 @@ def check_signature(func):
 
 class ChargifyWebhookBaseView(View):
     # make sure to enable the sending of these events in chargify
-    event_handlers = {
+    event_handlers = [
         'test',
         'signup_success',
         #'signup_failure',
@@ -60,9 +60,9 @@ class ChargifyWebhookBaseView(View):
         #'payment_failure',
         #'billing_date_change',
         'subscription_product_change',
-        #'subscription_state_change',
+        'subscription_state_change',
         #'expiring_card', 
-    }
+    ]
 
     # this method is called when the 'event' attribute is invalid
     def method_not_allowed(self, request, *args, **kwargs):
@@ -104,6 +104,21 @@ class ChargifyWebhookView(ChargifyWebhookBaseView):
 
         # call hook
         self.post_signup_success(user, subscription)
+
+        # tell chargify we have processed this webhook correctly
+        return HttpResponse(status=200)
+
+    def post_subscription_state_change(self, user, subscription): 
+        pass
+    def subscription_state_change(self, request, event, payload):
+        # update the subscription
+        subscription_id = payload['subscription']['id']
+        subscription, loaded = Subscription.objects.get_or_load(subscription_id)
+        subscription.update(True)
+
+        # call hook
+        user = subscription.customer.user
+        self.post_subscription_product_change(user, subscription)
 
         # tell chargify we have processed this webhook correctly
         return HttpResponse(status=200)
