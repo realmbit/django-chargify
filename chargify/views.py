@@ -1,7 +1,7 @@
 import traceback, hashlib
 from functools import wraps
 
-from settings import CHARGIFY_SHARED_KEY 
+from settings import CHARGIFY_API_KEY 
 from django.http import HttpResponse, Http404
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
@@ -39,7 +39,7 @@ def check_signature(func):
         # when request.raw_post_data is read
         data = parse_chargify_webhook(request.POST)
         verified_signature = hashlib.md5(
-            CHARGIFY_SHARED_KEY + request.raw_post_data
+            CHARGIFY_API_KEY + request.raw_post_data
         ).hexdigest()
         if signature == verified_signature:
             return func(request, data)
