@@ -333,8 +333,15 @@ class ChargifyBase(object):
 
     def getAll(self):
         if self.Meta.listing:
-            return self._applyA(self._get('/%s.xml' % self.Meta.listing),
-                self.__name__, self.__xmlnodename__)
+            rv = []
+            page = 1
+            while True:
+                vals = self._applyA(self._get('/%s.xml?page=%s' % (self.Meta.listing, page)),
+                    self.__name__, self.__xmlnodename__)
+                if not vals: break
+                rv.extend(vals)
+                page += 1
+            return rv
         raise NotImplementedError('Subclass is missing Meta class attribute listing')
 
     def getById(self, id):
