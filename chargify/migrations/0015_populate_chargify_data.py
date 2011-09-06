@@ -14,7 +14,7 @@ from chargify.models import Subscription, Customer
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        if getattr(settings, "TESTING", None):
+        if getattr(settings, "TESTING", None) or getattr(settings, "DEBUG", None):
             return
         try:
             Customer.objects.reload_all()
