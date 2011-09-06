@@ -216,9 +216,12 @@ class Customer(models.Model, ChargifyBaseModel):
                 raise User.DoesNotExist
         except User.DoesNotExist: #@UndefinedVariable
             try:
-                user = User.objects.get(email=api.email)
+                user = User.objects.get(models.Q(email=api.email)
+                                        |models.Q(username=api.reference)
+                                        |models.Q(username=self._gen_username(customer)))
             except:
-                user = User(first_name = api.first_name, last_name = api.last_name, email = api.email, username = api.email)
+                user = User(first_name = api.first_name, last_name = api.last_name, email = api.email, username = self._gen_username(customer))
+                log.warning("Customer '%s %s' (%s) not matched to user. Given username '%s'" % (api.first_name, api.last_name, api.email, user.username))
                 user.save()
             customer.user = user
         customer.organization = api.organization
@@ -226,7 +229,14 @@ class Customer(models.Model, ChargifyBaseModel):
         customer.chargify_created_at = api.created_at
         if commit:
             customer.save()
+            log.debug("Saved customer '%s %s'." % (customer.first_name, customer.last_name))
         return customer
+
+    def _gen_username(self, customer):
+        """
+        Create a unique username for the user
+        """
+        return("chargify_%s" % (self.id or customer.chargify_id))
 
     def update(self, commit = True):
         """ Update customer data from chargify """
