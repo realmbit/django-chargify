@@ -534,14 +534,15 @@ class Product(models.Model, ChargifyBaseModel):
         self.interval_unit = api.interval_unit
         self.interval = api.interval
 
-        try:
-            pf = ProductFamily.objects.get(
-                    chargify_id=api.product_family.id)
-        except:
-            pf = ProductFamily()
-            pf.load(api.product_family)
-            pf.save()
-        self.product_family = pf
+        if api.product_family:
+            try:
+                pf = ProductFamily.objects.get(
+                        chargify_id=api.product_family.id)
+            except:
+                pf = ProductFamily()
+                pf.load(api.product_family)
+                pf.save()
+            self.product_family = pf
 
         if commit:
             self.save()
