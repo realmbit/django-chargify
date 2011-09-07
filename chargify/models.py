@@ -216,9 +216,12 @@ class Customer(models.Model, ChargifyBaseModel):
                 raise User.DoesNotExist
         except User.DoesNotExist: #@UndefinedVariable
             try:
-                user = User.objects.get(email=api.email)
+                user = User.objects.get(models.Q(email=api.email)
+                                        |models.Q(username=api.reference)
+                                        |models.Q(username=self._gen_username(customer)))
             except:
-                user = User(first_name = api.first_name, last_name = api.last_name, email = api.email, username = api.email)
+                user = User(first_name = api.first_name, last_name = api.last_name, email = api.email, username = self._gen_username(customer))
+                log.warning("Customer '%s %s' (%s) not matched to user. Given username '%s'" % (api.first_name, api.last_name, api.email, user.username))
                 user.save()
             customer.user = user
         customer.organization = api.organization
@@ -226,7 +229,14 @@ class Customer(models.Model, ChargifyBaseModel):
         customer.chargify_created_at = api.created_at
         if commit:
             customer.save()
+            log.debug("Saved customer '%s %s'." % (customer.first_name, customer.last_name))
         return customer
+
+    def _gen_username(self, customer):
+        """
+        Create a unique username for the user
+        """
+        return("chargify_%s" % (self.id or customer.chargify_id))
 
     def update(self, commit = True):
         """ Update customer data from chargify """
@@ -524,14 +534,15 @@ class Product(models.Model, ChargifyBaseModel):
         self.interval_unit = api.interval_unit
         self.interval = api.interval
 
-        try:
-            pf = ProductFamily.objects.get(
-                    chargify_id=api.product_family.id)
-        except:
-            pf = ProductFamily()
-            pf.load(api.product_family)
-            pf.save()
-        self.product_family = pf
+        if api.product_family:
+            try:
+                pf = ProductFamily.objects.get(
+                        chargify_id=api.product_family.id)
+            except:
+                pf = ProductFamily()
+                pf.load(api.product_family)
+                pf.save()
+            self.product_family = pf
 
         if commit:
             self.save()
@@ -822,8 +833,14 @@ class Subscription(models.Model, ChargifyBaseModel):
         self.chargify_id = int(api.id)
         self.state = api.state
         self.balance_in_cents = api.balance_in_cents
-        self.current_period_started_at = new_datetime(api.current_period_started_at)
-        self.current_period_ends_at = new_datetime(api.current_period_ends_at)
+        if api.current_period_started_at:
+            self.current_period_started_at = new_datetime(api.current_period_started_at)
+        else:
+            self.current_period_started_at = None
+        if api.current_period_ends_at:
+            self.current_period_ends_at = new_datetime(api.current_period_ends_at)
+        else:
+            self.current_period_ends_at = None
         if api.trial_started_at:
             self.trial_started_at = new_datetime(api.trial_started_at)
         else:
