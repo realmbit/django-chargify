@@ -1,13 +1,13 @@
 import traceback, hashlib
 from functools import wraps
 
-from settings import CHARGIFY_API_KEY 
 from django.http import HttpResponse, Http404
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from chargify.models import Customer, Subscription
+from chargify_settings import CHARGIFY_API_KEY
 
 import logging
 logger = logging.getLogger(__name__)
