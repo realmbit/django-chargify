@@ -600,6 +600,13 @@ class ChargifySubscription(ChargifyBase):
 
         self._delete("/subscriptions/" + self.id + ".xml", xml)
 
+    def charge(self, amount, memo):
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<charge>
+  <amount>%s</amount>
+  <memo>%s</memo>
+</charge>""" % (amount, memo)
+        self._post('/subscriptions/' + self.id + '/charges.xml', xml)
 
 class ChargifyCreditCard(ChargifyBase):
     """
