@@ -910,6 +910,10 @@ class Subscription(models.Model, ChargifyBaseModel):
         else:
             return None
 
+    def charge(self, amount, memo):
+        """ Create a one-time charge """
+        return self.api.charge(amount, memo)
+
     def upgrade(self, product):
         """ Upgrade / Downgrade products """
         return self.update(self.api.upgrade(product.handle))
@@ -1036,4 +1040,3 @@ class SubscriptionComponent(models.Model, ChargifyBaseModel):
         component.enabled = self.enabled
         return component
     api = property(_api)
-
