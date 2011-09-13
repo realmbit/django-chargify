@@ -157,12 +157,17 @@ class Customer(models.Model, ChargifyBaseModel):
     email = property(_get_email, _set_email)
 
     def _get_reference(self):
+        """
+        The reference matches the username. NOTE THIS MAY NOT APPLY IN ALL SITUATIONS.
+        """
         """ You must save the customer before you can get the reference number"""
         if getattr(settings, 'TESTING', False) and not self._reference:
             self._reference = unique_reference()
 
         if self._reference:
             return self._reference
+        elif self.user:
+            return self.user.username
         elif self.id:
             return self.id
         else:
@@ -216,8 +221,8 @@ class Customer(models.Model, ChargifyBaseModel):
                 raise User.DoesNotExist
         except User.DoesNotExist: #@UndefinedVariable
             try:
-                user = User.objects.get(models.Q(email=api.email)
-                                        |models.Q(username=api.reference)
+                user = User.objects.get(models.Q(username=api.reference)
+                                        |models.Q(email=api.email)
                                         |models.Q(username=self._gen_username(customer)))
             except:
                 user = User(first_name = api.first_name, last_name = api.last_name, email = api.email, username = self._gen_username(customer))
