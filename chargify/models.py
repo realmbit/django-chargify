@@ -903,10 +903,10 @@ class Subscription(models.Model, ChargifyBaseModel):
 
     def update(self, commit=True):
         """ Update Subscription data from chargify """
-        subscriptions = self.gateway.Subscription().getBySubscriptionId(self.chargify_id)
+        subscription = self.gateway.Subscription().getBySubscriptionId(self.chargify_id)
 
-        if len(subscriptions) > 0:
-            return self.load(subscriptions[0], commit)
+        if subscription:
+            return self.load(subscription, commit)
         else:
             return None
 
