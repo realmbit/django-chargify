@@ -820,6 +820,11 @@ class Subscription(models.Model, ChargifyBaseModel):
         self.api.reactivate()
         self.update()
 
+    def unsubscribe(self, message="", *args, **kwargs):
+        self.api.unsubscribe(message=message)
+        self.last_deactivation_at = datetime.datetime.now()
+        self.update(commit=True)
+
     def delete(self, save_api = False, commit = True, message = None, *args, **kwargs):
         if save_api:
             self.api.delete(message=message)
