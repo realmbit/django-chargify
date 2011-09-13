@@ -387,6 +387,7 @@ class ChargifyCustomer(ChargifyBase):
     """
 
     class Meta:
+        paged = True
         listing = 'customers'
 
     __name__ = 'ChargifyCustomer'
