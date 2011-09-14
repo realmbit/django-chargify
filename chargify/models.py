@@ -905,10 +905,7 @@ class Subscription(models.Model, ChargifyBaseModel):
         """ Update Subscription data from chargify """
         subscriptions = self.gateway.Subscription().getBySubscriptionId(self.chargify_id)
 
-        if len(subscriptions) > 0:
-            return self.load(subscriptions[0], commit)
-        else:
-            return None
+        return subscriptions
 
     def charge(self, amount, memo):
         """ Create a one-time charge """
