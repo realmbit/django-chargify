@@ -7,7 +7,7 @@ from django.views.generic.base import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from chargify.models import Customer, Subscription
-from chargify_settings import CHARGIFY_API_KEY
+from chargify_settings import CHARGIFY_SHARED_KEY
 
 import logging
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def check_signature(func):
         # when request.raw_post_data is read
         data = parse_chargify_webhook(request.POST)
         verified_signature = hashlib.md5(
-            CHARGIFY_API_KEY + request.raw_post_data
+            CHARGIFY_SHARED_KEY + request.raw_post_data
         ).hexdigest()
         if signature == verified_signature:
             return func(request, data)
