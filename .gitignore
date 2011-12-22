@@ -3,6 +3,8 @@
 /django_chargify.egg-info/SOURCES.txt
 /django_chargify.egg-info/dependency_links.txt
 /django_chargify.egg-info/top_level.txt
+/dist/*
+/build/*
 /.project
 /.pydevproject
 /.settings/org.eclipse.core.resources.prefs
