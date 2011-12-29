@@ -86,6 +86,10 @@ class ChargifyWebhookBaseView(View):
         return handler(request, event, payload)
 
 class ChargifyWebhookView(ChargifyWebhookBaseView):
+    def test(self, request, event, payload):
+        logger.info('A test webhook is received') 
+        return HttpResponse(status=200)
+        
     def post_signup_success(self, user, subscription):
         pass
     def signup_success(self, request, event, payload):
