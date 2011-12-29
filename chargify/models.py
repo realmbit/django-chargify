@@ -895,15 +895,17 @@ class Subscription(models.Model, ChargifyBaseModel):
             self.save()
 
         for subscomp in api.getComponents():
-            try:
-                sc = SubscriptionComponent.objects.get(
-                    component__chargify_id = subscomp.component_id,
-                    subscription__chargify_id = subscomp.subscription_id
-                )
-            except:
-                sc = SubscriptionComponent()
-                sc.load(subscomp)
-                sc.save()
+            # FIXME: remove the subscomp check when no longer needed
+            if subscomp.enabled:
+                try:
+                    sc = SubscriptionComponent.objects.get(
+                        component__chargify_id = subscomp.component_id,
+                        subscription__chargify_id = subscomp.subscription_id
+                    )
+                except:
+                    sc = SubscriptionComponent()
+                    sc.load(subscomp)
+                    sc.save()
         return self
 
     def update(self, commit=True):
