@@ -64,17 +64,19 @@ class ChargifyWebhookBaseView(View):
         #'expiring_card', 
     ]
 
-    # this method is called when the 'event' attribute is invalid
     def method_not_allowed(self, request, *args, **kwargs):
+        """ this method is called when the 'event' attribute is invalid """
         raise Http404()
 
     @csrf_exempt
     @log_error
     @method_decorator(check_signature)
     def dispatch(self, request, data):
-        # Try to dispatch to the right method; if a method doesn't exist,
-        # defer to the error handler. Also defer to the error handler if the
-        # request method isn't on the approved list.
+        """ 
+        Try to dispatch to the right method; if a method doesn't exist,
+        defer to the error handler. Also defer to the error handler if the
+        request method isn't on the approved list.
+        """
 
         event = data['event']
         payload = data['payload']
