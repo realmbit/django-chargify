@@ -49,20 +49,35 @@ def check_signature(func):
 
 
 class ChargifyWebhookBaseView(View):
+    TEST = 'test'
+    SIGNUP_SUCCESS = 'signup_success'
+    SIGNUP_FAILURE = 'signup_failure'
+    RENEWAL_SUCCESS = 'renewal_success'
+    RENEWAL_FAILURE = 'renewal_failure'
+    PAYMENT_SUCCESS = 'payment_success'
+    PAYMENT_FAILURE = 'payment_failure'
+    BILLING_DATE_CHANGE = 'billing_date_change'
+    SUBSCRIPTION_PRODUCT_CHANGE = 'subscription_product_change'
+    SUBSCRIPTION_STATE_CHANGE = 'subscription_state_change'
+    EXPIRING_CARD =  'expiring_card' 
+
     # make sure to enable the sending of these events in chargify
+    # modify this by overriding get_event_handlers()
     event_handlers = [
-        'test',
-        'signup_success',
-        #'signup_failure',
-        #'renewal_success',
-        #'renewal_failure',
-        #'payment_success',
-        #'payment_failure',
-        #'billing_date_change',
-        'subscription_product_change',
-        'subscription_state_change',
-        #'expiring_card', 
+        TEST,
+        SIGNUP_SUCCESS,
+        #SIGNUP_FAILURE,
+        #RENEWAL_SUCCESS,
+        #RENEWAL_FAILURE,
+        #PAYMENT_SUCCESS,
+        #PAYMENT_FAILURE,
+        #BILLING_DATE_CHANGE,
+        SUBSCRIPTION_PRODUCT_CHANGE,
+        SUBSCRIPTION_STATE_CHANGE,
+        #EXPIRING_CARD, 
     ]
+    def get_event_handlers(self):
+        return self.event_handlers
 
     def method_not_allowed(self, request, *args, **kwargs):
         """ this method is called when the 'event' attribute is invalid """
@@ -80,7 +95,7 @@ class ChargifyWebhookBaseView(View):
 
         event = data['event']
         payload = data['payload']
-        if event.lower() in self.event_handlers:
+        if event.lower() in self.get_event_handlers():
             handler = getattr(self, event.lower(), self.method_not_allowed)
         else:
             handler = self.method_not_allowed
