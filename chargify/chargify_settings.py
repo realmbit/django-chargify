@@ -14,6 +14,11 @@ if CHARGIFY_SUBDOMAIN is None:
 CHARGIFY_API_KEY = getattr(settings, 'CHARGIFY_API_KEY', None)
 if CHARGIFY_API_KEY is None:
     raise ValueError(missing %('CHARGIFY_API_KEY'))
+
+CHARGIFY_SHARED_KEY = getattr(settings, 'CHARGIFY_SHARED_KEY', None)
+if CHARGIFY_SHARED_KEY is None:
+    raise ValueError(missing %('CHARGIFY_SHARED_KEY'))
+
 del missing
 
 CHARGIFY = Chargify(CHARGIFY_API_KEY, CHARGIFY_SUBDOMAIN)

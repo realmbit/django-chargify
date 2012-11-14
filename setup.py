@@ -8,7 +8,7 @@ if len(VERSION)>2 and VERSION[2] is not None:
 else:
     str_version = "%d.%d" % VERSION[:2]
 
-version= str_version
+version= str_version + '_lieryan1'
 
 setup(
     name = 'django-chargify',
