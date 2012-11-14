@@ -926,10 +926,6 @@ class Subscription(models.Model, ChargifyBaseModel):
         """ Create a one-time charge """
         return self.api.charge(amount, memo)
 
-    def charge(self, amount, memo):
-        """ Create a one-time charge """
-        return self.api.charge(amount, memo)
-
     def upgrade(self, product):
         """ Upgrade / Downgrade products """
         return self.update(self.api.upgrade(product.handle))
