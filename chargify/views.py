@@ -119,7 +119,7 @@ class ChargifyWebhookView(ChargifyWebhookBaseView):
 
         # call hook
         user = subscription.customer.user
-        self.post_subscription_product_change(user, subscription)
+        self.post_subscription_state_change(user, subscription)
 
         # tell chargify we have processed this webhook correctly
         return HttpResponse(status=200)
