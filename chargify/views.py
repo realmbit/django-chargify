@@ -1,4 +1,4 @@
-import traceback, hashlib
+import hashlib
 from functools import wraps
 
 from django.http import HttpResponse, Http404
@@ -11,25 +11,6 @@ from chargify_settings import CHARGIFY_SHARED_KEY
 
 import logging
 logger = logging.getLogger(__name__)
-
-def log_error(func):
-    def _func(*args, **kwargs):
-        try:
-            result = func(*args, **kwargs)
-        except:
-            logger.error("==== AN EXCEPTION IS RAISED ====")
-            logger.error(args)
-            logger.error(kwargs)
-            logger.error(traceback.print_exc())
-            logger.error("==== END OF EXCEPTION ====")
-            raise
-        else:
-            #print "==== HTTP RESPONSE ===="
-            #print args, kwargs
-            #print result
-            #print "==== END HTTP RESPONSE ===="
-            return result
-    return _func
 
 def check_signature(func):
     """ if the signature does not match pretend that the page does not exist """
@@ -84,7 +65,6 @@ class ChargifyWebhookBaseView(View):
         raise Http404()
 
     @csrf_exempt
-    @log_error
     @method_decorator(check_signature)
     def dispatch(self, request, data):
         """ 
