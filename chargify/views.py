@@ -96,7 +96,10 @@ class ChargifyWebhookView(ChargifyWebhookBaseView):
 
         # attach the chargify customer to a contrib.auth user
         reference = payload['subscription']['customer']['reference']
-        user = User.objects.get(email=reference)
+        try:
+            user = User.objects.get(email=reference)
+        except User.DoesNotExist:
+            user = User.objects.get(username=reference)
         user.customer_set.add(customer)
 
         # create the subscription cache
