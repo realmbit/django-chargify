@@ -126,7 +126,7 @@ class Customer(models.Model, ChargifyBaseModel):
         else:
             return '%s %s' %(self.first_name, self.last_name)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.full_name() + u' - ' + str(self.chargify_id )
 
     def _get_first_name(self):
@@ -309,7 +309,7 @@ class ProductFamily(models.Model, ChargifyBaseModel):
     handle = models.CharField(max_length=75, default='')
     objects = ProductFamilyManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def _set_handle(self, handle):
@@ -388,7 +388,7 @@ class Component(models.Model, ChargifyBaseModel):
     created_at = models.DateTimeField(auto_now=True)
     objects = ComponentManager()
 
-    def __unicode__(self):
+    def __str__(self):
         s = ""
         if self.product_family is not None:
             s+= "(%s) " % self.product_family
@@ -496,7 +496,7 @@ class Product(models.Model, ChargifyBaseModel):
     active = models.BooleanField(default=True)
     objects = ProductManager()
 
-    def __unicode__(self):
+    def __str__(self):
         s = ""
         if self.product_family is not None:
             s+= "(%s) " % self.product_family
@@ -600,7 +600,7 @@ class CreditCard(models.Model, ChargifyBaseModel):
     active = models.BooleanField(default=True)
     objects = CreditCardManager()
 
-    def __unicode__(self):
+    def __str__(self):
         s = u''
         if self.first_name:
             s += unicode(self.first_name)
@@ -774,7 +774,7 @@ class Subscription(models.Model, ChargifyBaseModel):
     active = models.BooleanField(default=True)
     objects = SubscriptionManager()
 
-    def __unicode__(self):
+    def __str__(self):
         s = unicode(self.get_state_display())
         if self.product:
             s += u' ' + self.product.name
@@ -991,7 +991,7 @@ class SubscriptionComponent(models.Model, ChargifyBaseModel):
     def pricing_scheme(self):
         return self.component.pricing_scheme
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s - %s' % (self.subscription, self.component)
 
     def save(self, save_api=False, **kwargs):
