@@ -19,7 +19,7 @@ Created on Nov 20, 2009
 Author: Paul Trippett (paul@pyhub.com)
 '''
 
-import httplib
+import http
 import base64
 import time
 import datetime
@@ -32,19 +32,7 @@ from xml.dom import minidom
 
 log = logging.getLogger("pychargify")
 
-
-try:
-    import json
-except Exception as e:
-    try:
-        import simplejson as json
-    except Exception as e:
-        try:
-            # For AppEngine users
-            import django.utils.simplejson as json
-        except Exception as e:
-            log.error("No Json library found... Exiting.")
-            exit()
+import json
 
 
 class ChargifyError(Exception):
@@ -246,27 +234,27 @@ class ChargifyBase(object):
         """
         Handled the request and sends it to the server
         """
-        http = httplib.HTTPSConnection(self.request_host)
+        http_request = http.client.HTTPSConnection(self.request_host)
 
-        http.putrequest(method, url)
-        http.putheader("Authorization", "Basic %s" % self._get_auth_string())
-        http.putheader("User-Agent", "pychargify")
-        http.putheader("Host", self.request_host)
-        http.putheader("Accept", "application/xml")
+        http_request.putrequest(method, url)
+        http_request.putheader("Authorization", "Basic %s" % self._get_auth_string())
+        http_request.putheader("User-Agent", "pychargify")
+        http_request.putheader("Host", self.request_host)
+        http_request.putheader("Accept", "application/xml")
 
         if data:
-            http.putheader("Content-Length", str(len(data)))
+            http_request.putheader("Content-Length", str(len(data)))
 
-        http.putheader("Content-Type", 'text/xml; charset="UTF-8"')
-        http.endheaders()
+        http_request.putheader("Content-Type", 'text/xml; charset="UTF-8"')
+        http_request.endheaders()
 
         log.debug('url: %s' % url)
         log.debug('sending: %s' % data)
 
         if data:
-            http.send(data)
+            http_request.send(data)
 
-        response = http.getresponse()
+        response = http_request.getresponse()
         r = response.read()
 
         log.debug('got: %s' % r)
