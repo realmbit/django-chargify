@@ -1,4 +1,4 @@
-from chargify_settings import CHARGIFY, CHARGIFY_CC_TYPES
+from chargify.settings import CHARGIFY, CHARGIFY_CC_TYPES
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db import models

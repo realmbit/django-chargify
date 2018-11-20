@@ -7,7 +7,7 @@ from django.views.generic.base import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from chargify.models import Customer, Subscription
-from chargify_settings import CHARGIFY_SHARED_KEY
+from chargify.settings import CHARGIFY_SHARED_KEY
 
 import logging
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class ChargifyWebhookBaseView(View):
     BILLING_DATE_CHANGE = 'billing_date_change'
     SUBSCRIPTION_PRODUCT_CHANGE = 'subscription_product_change'
     SUBSCRIPTION_STATE_CHANGE = 'subscription_state_change'
-    EXPIRING_CARD =  'expiring_card' 
+    EXPIRING_CARD =  'expiring_card'
 
     # make sure to enable the sending of these events in chargify
     # modify this by overriding get_event_handlers()
@@ -55,7 +55,7 @@ class ChargifyWebhookBaseView(View):
         #BILLING_DATE_CHANGE,
         SUBSCRIPTION_PRODUCT_CHANGE,
         SUBSCRIPTION_STATE_CHANGE,
-        #EXPIRING_CARD, 
+        #EXPIRING_CARD,
     ]
     def get_event_handlers(self):
         return self.event_handlers
@@ -67,7 +67,7 @@ class ChargifyWebhookBaseView(View):
     @csrf_exempt
     @method_decorator(check_signature)
     def dispatch(self, request, data):
-        """ 
+        """
         Try to dispatch to the right method; if a method doesn't exist,
         defer to the error handler. Also defer to the error handler if the
         request method isn't on the approved list.
@@ -84,9 +84,9 @@ class ChargifyWebhookBaseView(View):
 
 class ChargifyWebhookView(ChargifyWebhookBaseView):
     def test(self, request, event, payload):
-        logger.info('A test webhook is received') 
+        logger.info('A test webhook is received')
         return HttpResponse(status=200)
-        
+
     def post_signup_success(self, user, subscription):
         pass
     def signup_success(self, request, event, payload):
@@ -112,7 +112,7 @@ class ChargifyWebhookView(ChargifyWebhookBaseView):
         # tell chargify we have processed this webhook correctly
         return HttpResponse(status=200)
 
-    def post_subscription_state_change(self, user, subscription): 
+    def post_subscription_state_change(self, user, subscription):
         pass
     def subscription_state_change(self, request, event, payload):
         # update the subscription
@@ -127,7 +127,7 @@ class ChargifyWebhookView(ChargifyWebhookBaseView):
         # tell chargify we have processed this webhook correctly
         return HttpResponse(status=200)
 
-    def post_subscription_product_change(self, user, previous_product_handle, subscription): 
+    def post_subscription_product_change(self, user, previous_product_handle, subscription):
         pass
     def subscription_product_change(self, request, event, payload):
         # update the subscription
@@ -153,4 +153,3 @@ def parse_chargify_webhook(post_data):
             cur = cur.setdefault(key, {})
         cur[keys[-1]] = v
     return result
-

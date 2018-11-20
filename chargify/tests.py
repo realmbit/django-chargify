@@ -1,5 +1,5 @@
 from chargify import models
-from chargify.chargify_settings import CHARGIFY
+from chargify.settings import CHARGIFY
 from chargify.pychargify.api import ChargifyUnProcessableEntity
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -89,5 +89,3 @@ class Models(TestCase):
         self.assertEqual(c.api.first_name, 'Hello')
         self.assertEqual(c.first_name, 'Hello')
         self.assertEqual(c.last_name, 'World')
-
-
