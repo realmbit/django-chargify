@@ -1,11 +1,11 @@
 from django.conf import settings
 missing = "Missing required setting: %s"
 try:
-    import chargify
+    import chargify.pychargify
     # del chargify
 except:
     raise ImportError("You must install pychargify: http://github.com/getyouridx/pychargify")
-from chargify.api import Chargify
+from chargify.pychargify.api import Chargify
 
 CHARGIFY_SUBDOMAIN = getattr(settings, "CHARGIFY_SUBDOMAIN", None)
 if CHARGIFY_SUBDOMAIN is None:
