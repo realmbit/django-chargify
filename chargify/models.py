@@ -770,7 +770,7 @@ class Subscription(models.Model, ChargifyBaseModel):
     last_activation_at = models.DateTimeField(null=True, blank=True)
     customer = models.ForeignKey(Customer, null=True, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, null=True, on_delete=models.CASCADE)
-    credit_card = models.OneToOneField(CreditCard, related_name='subscription', null=True, blank=True)
+    credit_card = models.OneToOneField(CreditCard, on_delete=models.CASCADE, related_name='subscription', null=True, blank=True)
     active = models.BooleanField(default=True)
     objects = SubscriptionManager()
 
