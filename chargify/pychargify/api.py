@@ -35,14 +35,14 @@ log = logging.getLogger("pychargify")
 
 try:
     import json
-except Exception, e:
+except Exception as e:
     try:
         import simplejson as json
-    except Exception, e:
+    except Exception as e:
         try:
             # For AppEngine users
             import django.utils.simplejson as json
-        except Exception, e:
+        except Exception as e:
             log.error("No Json library found... Exiting.")
             exit()
 
