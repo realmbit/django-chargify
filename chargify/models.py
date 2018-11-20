@@ -106,7 +106,7 @@ class Customer(models.Model, ChargifyBaseModel):
         reference = Customer.id
     """
     chargify_id = models.IntegerField(null=True, blank=False, unique=True)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     _first_name = models.CharField(max_length = 50, null=True, blank=False)
     _last_name = models.CharField(max_length = 50, null = True, blank=False)
     _email = models.EmailField(null=True, blank=False)
@@ -376,7 +376,7 @@ class Component(models.Model, ChargifyBaseModel):
     )
     chargify_id = models.IntegerField(null=True, blank=False, unique=True)
     name = models.CharField(max_length=75)
-    product_family = models.ForeignKey(ProductFamily, null=True)
+    product_family = models.ForeignKey(ProductFamily, null=True, on_delete=models.CASCADE)
     kind = models.CharField(
         max_length=30, choices=KIND_CHOICES, default='metered_component')
     pricing_scheme = models.CharField(
@@ -489,7 +489,7 @@ class Product(models.Model, ChargifyBaseModel):
     price = models.DecimalField(decimal_places = 2, max_digits = 15, default=Decimal('0.00'))
     name = models.CharField(max_length=75)
     handle = models.CharField(max_length=75, default='')
-    product_family = models.ForeignKey(ProductFamily, null=True)
+    product_family = models.ForeignKey(ProductFamily, null=True, on_delete=models.CASCADE)
     accounting_code = models.CharField(max_length=30, null=True)
     interval_unit = models.CharField(max_length=10, choices = INTERVAL_TYPES, default=MONTH)
     interval = models.IntegerField(default=1)
@@ -768,8 +768,8 @@ class Subscription(models.Model, ChargifyBaseModel):
     updated_at = models.DateTimeField(null=True, blank=True)
     last_deactivation_at = models.DateTimeField(null=True, blank=True)
     last_activation_at = models.DateTimeField(null=True, blank=True)
-    customer = models.ForeignKey(Customer, null=True)
-    product = models.ForeignKey(Product, null=True)
+    customer = models.ForeignKey(Customer, null=True, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, null=True, on_delete=models.CASCADE)
     credit_card = models.OneToOneField(CreditCard, related_name='subscription', null=True, blank=True)
     active = models.BooleanField(default=True)
     objects = SubscriptionManager()
@@ -966,8 +966,8 @@ class SubscriptionComponentManager(ChargifyBaseManager):
 
 
 class SubscriptionComponent(models.Model, ChargifyBaseModel):
-    component = models.ForeignKey(Component, null=True)
-    subscription = models.ForeignKey(Subscription, null=True)
+    component = models.ForeignKey(Component, null=True, on_delete=models.CASCADE)
+    subscription = models.ForeignKey(Subscription, null=True, on_delete=models.CASCADE)
     unit_balance = models.DecimalField(
         decimal_places = 2, max_digits = 15, default=Decimal('0.00'))
     allocated_quantity = models.DecimalField(
