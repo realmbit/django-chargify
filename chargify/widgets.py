@@ -13,23 +13,23 @@ def _render_decimal(value, places=2, min_places=2):
         roundfactor = "0." + "0"*(places-1) + "1"
         if value < 0:
             roundfactor = "-" + roundfactor
-        
+
         value = round_decimal(val=value, places=places, roundfactor=roundfactor, normalize=True)
         parts = ("%f" % value).split('.')
         n = parts[0]
         d = ""
-    
+
         if len(parts) > 0:
             d = parts[1]
         elif min_places:
             d = "0" * min_places
-        
+
         while len(d) < min_places:
             d = "%s0" % d
-        
+
         while len(d) > min_places and d[-1] == '0':
             d = d[:-1]
-    
+
         if len(d) > 0:
             value = "%s.%s" % (n, d)
         else:
@@ -47,8 +47,8 @@ class BaseCurrencyWidget(forms.TextInput):
         super(BaseCurrencyWidget, self).__init__(attrs=final_attrs)
 
 class CurrencyWidget(BaseCurrencyWidget):
-    
-    def render(self, name, value, attrs=None):
+
+    def render(self, name, value, attrs=None, renderer=None):
         if value != '':
             value = _render_decimal(value, places=8)
         rendered = super(CurrencyWidget, self).render(name, value, attrs)
@@ -67,7 +67,6 @@ class StrippedDecimalWidget(forms.TextInput):
             final_attrs.update(attrs)
         super(StrippedDecimalWidget, self).__init__(attrs=final_attrs)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         value = _render_decimal(value, places=8, min_places=0)
         return super(StrippedDecimalWidget, self).render(name, value, attrs)
-

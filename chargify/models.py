@@ -603,15 +603,15 @@ class CreditCard(models.Model, ChargifyBaseModel):
     def __str__(self):
         s = u''
         if self.first_name:
-            s += unicode(self.first_name)
+            s += str(self.first_name)
         if self.last_name:
             if s:
                 s += u' '
-            s += unicode(self.last_name)
+            s += str(self.last_name)
         if self.masked_card_number:
             if s:
                 s += u'-'
-            s += unicode(self.masked_card_number)
+            s += str(self.masked_card_number)
         return s
 
     # you have to set the customer if there is no related subscription yet
@@ -775,11 +775,11 @@ class Subscription(models.Model, ChargifyBaseModel):
     objects = SubscriptionManager()
 
     def __str__(self):
-        s = unicode(self.get_state_display())
+        s = str(self.get_state_display())
         if self.product:
             s += u' ' + self.product.name
         if self.chargify_id:
-            s += ' - ' + unicode(self.chargify_id)
+            s += ' - ' + str(self.chargify_id)
 
         return s
 
